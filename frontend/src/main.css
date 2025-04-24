@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+@theme {
+    --font-display: "Arial", "Helvetica", "sans-serif";
+    
+    --color-background: #212121;
+    --color-primary: #4A9EFF;
+    --color-primary-hover: #1a85ff;
+}
+
+#root {
+    height: 100%;
+    width: 100%;
+    background-color: var(--color-background);
+    color: white;
+}
+
+button {
+    background-color: var(--color-primary);
+    border-radius: 3px;
+    padding: 1ch;
+}
+
+button:hover {
+    cursor: pointer;
+    background-color: var(--color-primary-hover);
+}
+
+textarea {
+    border: 1px solid white;
+    border-radius: 5px;
+    padding: 1ch;
+}
