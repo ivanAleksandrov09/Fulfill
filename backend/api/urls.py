@@ -1,4 +1,6 @@
 from django.urls import path
-from . import views
+from .views.TextAnalyzer import TextAnalyzerView
 
-urlpatterns = []
+urlpatterns = [
+    path("analyze-text/", TextAnalyzerView.as_view()),
+]
