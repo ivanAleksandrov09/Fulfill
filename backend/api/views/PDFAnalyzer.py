@@ -1,3 +1,4 @@
+import io
 import json
 
 from google.genai.types import GenerateContentResponse
@@ -9,30 +10,44 @@ from rest_framework.views import APIView
 from .GeminiClient import client
 
 
-class TextAnalyzerView(APIView):
+class PDFAnalyzerView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request: Request, *args, **kwargs):
-        inputText = request.data.get("text")
+        uploadedFile = request.FILES["file"]
 
-        if not inputText:
-            return Response("Input text is required", status=400)
+        if not uploadedFile:
+            return Response("Input file is required", status=400)
+
+        if not uploadedFile.name.lower().endswith(".pdf"):
+            return Response({"error": "Uploaded file is not a PDF"}, status=400)
+
+        fileBytes = None
+        try:
+            fileBytes = uploadedFile.read()
+        except Exception as e:
+            return Response(f"Error reading uploaded PDF file: {e}", status=500)
+
+        clientUploadedFile = None
+        try:
+            clientUploadedFile = client.files.upload(
+                file=io.BytesIO(fileBytes), config={"mime_type": "application/pdf"}
+            )
+        except Exception as e:
+            return Response(f"Error when uploading PDF file to client: {e}", status=500)
 
         try:
             response: GenerateContentResponse = client.models.generate_content(
                 model="gemini-2.0-flash",
                 contents=[
                     systemPrompt,
-                    inputText,
+                    clientUploadedFile,
                 ],
                 config={
                     "response_mime_type": "application/json",
                     "response_schema": {
                         "type": "object",
                         "properties": {
-                            "formatted_text": {
-                                "type": "string",
-                            },
                             "logical_parts": {
                                 "type": "array",
                                 "items": {
@@ -41,7 +56,6 @@ class TextAnalyzerView(APIView):
                             },
                         },
                         "required": [
-                            "formatted_text",
                             "logical_parts",
                         ],
                     },
@@ -56,16 +70,14 @@ class TextAnalyzerView(APIView):
 
 
 systemPrompt = """
-Given the following text, please:
-1. Return the given text back formatted to maximize readability and retention by adding appropriate line breaks
+Given the following PDF document, please:
 
-2. Identify and list the main logical parts/sections of the text as an array
+1. Identify and list the main logical parts/sections of the document as an array
 
 Note: Return only the results without any explanation.
 
 Respond in the following JSON format:
 {
-    "formatted_text": "formatted text here",
     "logical_parts": ["part1", "part2", ...]
 }
 """

@@ -2,33 +2,90 @@ import { useState } from "react";
 
 export default function Modal({ initialText, onSubmit, onClose }) {
   const [localText, setLocalText] = useState(initialText);
+  const [inputType, setInputType] = useState("text");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleTextSubmit = (e) => {
     e.preventDefault();
     onSubmit(localText);
   };
 
+  const handleFileSubmit = async () => {
+    const fileInput = document.createElement("input");
+    fileInput.type = "file";
+    fileInput.accept = ".pdf";
+
+    fileInput.click();
+
+    fileInput.onchange = async (event) => {
+      const file = event.target.files[0];
+
+      if (!file) {
+        alert("No file selected");
+        return;
+      }
+
+      if (file.type !== "application/pdf") {
+        alert("Please select a valid PDF file");
+        return;
+      }
+
+      setLoading(true);
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      // try {
+      //   const response = await api.post("/api/bank-statement/", formData, {
+      //     headers: {
+      //       "Content-Type": "multipart/form-data",
+      //     },
+      //   });
+      //   if (response.status === 201) {
+      //     alert("File uploaded successfully!");
+      //   } else {
+      //     alert("File upload failed. Please try again.");
+      //   }
+      // } catch (error) {
+      //   alert("Upload error:", error);
+      // }
+    };
+  };
+
   return (
     <div className="fixed inset-0 h-screen w-screen flex justify-center items-center flex-col bg-black/50">
-      <div className="grid-rows-5 gap-4 border-1 rounded-sm p-3 bg-background">
-        <form onSubmit={handleSubmit}>
-          <div className="row-span-4 row-start-1">
-            <textarea
-              onChange={(e) => setLocalText(e.target.value)}
-              rows="14"
-              cols="50"
-              value={localText}
-            ></textarea>
+      <div className="grid grid-rows-7 gap-4 border-1 rounded-sm p-3 bg-background h-125 w-110">
+        <div className="row-start-1">
+          <div className="grid grid-cols-2 gap-1 justify-items-stretch mb-2"> 
+            <button onClick={() => setInputType("text")} className="!bg-background hover:!bg-background-hover border-r border-white rounded-[0px] w-auto">Plain text</button>
+            <button onClick={() => setInputType("pdf")} className="!bg-background hover:!bg-background-hover w-auto">PDF</button>
           </div>
-          <div className="row-span-1 row-start-4 flex justify-around">
-            <button className="w-25" onClick={onClose}>
-              Cancel
-            </button>
-            <button className="w-25" type="submit">
-              Submit
-            </button>
-          </div>
-        </form>
+        </div>
+        {(inputType === "text") &&
+        <div className="row-span-6 row-start-2 grid grid-rows-[1fr_auto]">
+          <form onSubmit={handleTextSubmit}>
+            <div className="justify-self-center">
+              <textarea
+                onChange={(e) => setLocalText(e.target.value)}
+                rows="14"
+                cols="50"
+                value={localText}
+              ></textarea>
+            </div>
+            <div className="flex justify-around">
+              <button className="w-25" onClick={onClose}>
+                Cancel
+              </button>
+              <button className="w-25" type="submit">
+                Submit
+              </button>
+            </div>
+          </form>
+        </div>}
+        {(inputType === "pdf") && 
+        <div className="row-span-6 row-start-2 justify-self-center self-center">
+          <button type="submit" onClick={handleFileSubmit} className="w-40 h-15">Upload file</button>
+        </div>}
       </div>
     </div>
   );
