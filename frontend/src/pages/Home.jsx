@@ -10,8 +10,12 @@ function Home() {
 
   const handleTextUpdate = (newText) => {
     setText(newText);
-    navigate("/Study", { state: { text: newText } });
+    navigate("/Study", { state: { text: newText, contentType: "text" } });
   };
+
+  const handleFileUpdate = (newFileURL) => {
+    navigate("/Study", { state: { fileURL: newFileURL, contentType: "file" } });
+  }
 
   return (
     <>
@@ -26,10 +30,12 @@ function Home() {
         >
           Upload text
         </button>
+
         {isModalOpen && (
           <Modal
             initialText={text}
-            onSubmit={handleTextUpdate}
+            onSubmitText={handleTextUpdate}
+            onSubmitFile={handleFileUpdate}
             onClose={() => setIsModalOpen(false)}
           />
         )}

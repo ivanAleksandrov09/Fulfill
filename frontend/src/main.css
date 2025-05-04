@@ -32,3 +32,11 @@ textarea {
     border-radius: 5px;
     padding: 1ch;
 }
+
+html,
+body,
+#root {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}

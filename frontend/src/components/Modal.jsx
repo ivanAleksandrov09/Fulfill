@@ -1,16 +1,16 @@
 import { useState } from "react";
 
-export default function Modal({ initialText, onSubmit, onClose }) {
+export default function Modal({ initialText, onSubmitText, onSubmitFile, onClose }) {
   const [localText, setLocalText] = useState(initialText);
   const [inputType, setInputType] = useState("text");
   const [loading, setLoading] = useState(false);
 
   const handleTextSubmit = (e) => {
     e.preventDefault();
-    onSubmit(localText);
+    onSubmitText(localText);
   };
 
-  const handleFileSubmit = async () => {
+  const handleFileSubmit = async (e) => {
     const fileInput = document.createElement("input");
     fileInput.type = "file";
     fileInput.accept = ".pdf";
@@ -30,37 +30,21 @@ export default function Modal({ initialText, onSubmit, onClose }) {
         return;
       }
 
-      setLoading(true);
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      // try {
-      //   const response = await api.post("/api/bank-statement/", formData, {
-      //     headers: {
-      //       "Content-Type": "multipart/form-data",
-      //     },
-      //   });
-      //   if (response.status === 201) {
-      //     alert("File uploaded successfully!");
-      //   } else {
-      //     alert("File upload failed. Please try again.");
-      //   }
-      // } catch (error) {
-      //   alert("Upload error:", error);
-      // }
-    };
+      onSubmitFile(URL.createObjectURL(file));
+    }
   };
 
   return (
     <div className="fixed inset-0 h-screen w-screen flex justify-center items-center flex-col bg-black/50">
       <div className="grid grid-rows-7 gap-4 border-1 rounded-sm p-3 bg-background h-125 w-110">
+
         <div className="row-start-1">
           <div className="grid grid-cols-2 gap-1 justify-items-stretch mb-2"> 
             <button onClick={() => setInputType("text")} className="!bg-background hover:!bg-background-hover border-r border-white rounded-[0px] w-auto">Plain text</button>
             <button onClick={() => setInputType("pdf")} className="!bg-background hover:!bg-background-hover w-auto">PDF</button>
           </div>
         </div>
+
         {(inputType === "text") &&
         <div className="row-span-6 row-start-2 grid grid-rows-[1fr_auto]">
           <form onSubmit={handleTextSubmit}>
@@ -82,9 +66,13 @@ export default function Modal({ initialText, onSubmit, onClose }) {
             </div>
           </form>
         </div>}
+
         {(inputType === "pdf") && 
         <div className="row-span-6 row-start-2 justify-self-center self-center">
-          <button type="submit" onClick={handleFileSubmit} className="w-40 h-15">Upload file</button>
+          <button
+            type="file" accept=".pdf"
+            onClick={handleFileSubmit}
+            className="w-40 h-15">Upload File</button>
         </div>}
       </div>
     </div>
