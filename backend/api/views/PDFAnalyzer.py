@@ -45,23 +45,11 @@ class PDFAnalyzerView(APIView):
                 ],
                 config={
                     "response_mime_type": "application/json",
-                    "response_schema": {
-                        "type": "object",
-                        "properties": {
-                            "logical_parts": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                },
-                            },
-                        },
-                        "required": [
-                            "logical_parts",
-                        ],
-                    },
+                    "response_schema": jsonSchema,
                 },
             )
         except Exception as e:
+            print(e)
             return Response(
                 f"Error when generating content logical parts: {e}", status=500
             )
@@ -74,10 +62,53 @@ Given the following PDF document, please:
 
 1. Identify and list the main logical parts/sections of the document as an array
 
+2. Construct questions relating the most key concepts of the document in the format of
+3 wrong answers and 1 right answer, returning an array of objects with values for:
+"question" (string), "wrong_answers" (array), "right answer" (string), "page_trigger" (num
+which indicates after which page is read should the question appear)
+
 Note: Return only the results without any explanation.
 
 Respond in the following JSON format:
 {
     "logical_parts": ["part1", "part2", ...]
+    "questions": [
+        "question",
+        "wrong_answers": ["answer1", "answer2", ...]
+        "right_answer",
+        "page_trigger"
+    ]
 }
 """
+
+jsonSchema = {
+    "type": "object",
+    "properties": {
+        "logical_parts": {
+            "type": "array",
+            "items": {
+                "type": "string",
+            },
+        },
+        "questions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "question": {"type": "string"},
+                    "wrong_answers": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                        },
+                    },
+                    "right_answer": {"type": "string"},
+                    "page_trigger": {"type": "integer"},
+                },
+                "required": ["question", "wrong_answers", "right_answer", "page_trigger"],
+            },
+        },
+    },
+    "required": ["logical_parts", "questions"],
+}
+
