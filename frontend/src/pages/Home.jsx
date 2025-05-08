@@ -15,7 +15,7 @@ function Home() {
 
   const handleFileUpdate = (newFileURL) => {
     navigate("/Study", { state: { fileURL: newFileURL, contentType: "file" } });
-  }
+  };
 
   return (
     <>

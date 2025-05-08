@@ -1,10 +1,10 @@
-import react from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Home from "./pages/Home";
-import NotFound from "./pages/NotFound";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { FileProvider } from "./components/FileContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import NotFound from "./pages/NotFound";
+import Register from "./pages/Register";
 import Study from "./pages/Study";
 
 function Logout() {
@@ -26,7 +26,9 @@ function App() {
           element={
             //protected route here makes sure you are logged in before accesing
             <ProtectedRoute>
-              <Home />
+              <FileProvider>
+                <Home />
+              </FileProvider>
             </ProtectedRoute>
           }
         />
@@ -34,7 +36,9 @@ function App() {
           path="/Study"
           element={
             <ProtectedRoute>
-              <Study />
+              <FileProvider>
+                <Study />
+              </FileProvider>
             </ProtectedRoute>
           }
         />

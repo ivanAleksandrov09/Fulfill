@@ -57,7 +57,8 @@ class TextAnalyzerView(APIView):
 
 systemPrompt = """
 Given the following text, please:
-1. Return the given text back formatted to maximize readability and retention by adding appropriate line breaks
+1. Return the given text back formatted to maximize readability and retention by adding line breaks
+after the end of each important section text
 
 2. Identify and list the main logical parts/sections of the text as an array
 
