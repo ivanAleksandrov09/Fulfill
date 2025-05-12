@@ -51,13 +51,17 @@ export default function Modal({
           <div className="grid grid-cols-2 gap-1 justify-items-stretch mb-2">
             <button
               onClick={() => setInputType("text")}
-              className="!bg-background hover:!bg-background-hover border-r border-white rounded-[0px] w-auto"
+              className={`!bg-background hover:!bg-background-hover border-r border-white rounded-[0px] w-auto ${
+                inputType === "text" ? "!bg-background-selected" : ""
+              }`}
             >
               Plain text
             </button>
             <button
               onClick={() => setInputType("pdf")}
-              className="!bg-background hover:!bg-background-hover w-auto"
+              className={`!bg-background hover:!bg-background-hover w-auto ${
+                inputType === "pdf" ? "!bg-background-selected" : ""
+              }`}
             >
               PDF
             </button>

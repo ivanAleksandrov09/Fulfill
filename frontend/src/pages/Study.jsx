@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import api from "../api";
 import Pdf from "../components/Pdf";
@@ -9,17 +9,21 @@ import { useFileContext } from "../components/FileContext";
 // Page where the user can focus/study their uploaded text
 export default function Study() {
   const { fileData } = useFileContext();
+  const [isLoading, setIsLoading] = useState(true);
 
   const location = useLocation();
   const contentType = location.state.contentType;
 
   const inputText = location.state.text || null;
-  const fileURL = location.state.fileURL || null;
-
-  const [sections, setSections] = useState([]);
   const [outputText, setOutputText] = useState(inputText || null);
 
-  const fetchSections = async () => {
+  const fileURL = location.state.fileURL || null;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [questions, setQuestions] = useState([]);
+
+  const [sections, setSections] = useState([]);
+
+  const fetchInfo = async () => {
     try {
       let response;
       if (contentType === "text") {
@@ -45,14 +49,76 @@ export default function Study() {
       }
 
       setSections(response.data["logical_parts"]);
+      setQuestions(response.data["questions"]);
+      setIsLoading(false);
     } catch (e) {
       console.log("Error fetching sections: ", e);
     }
   };
 
+  // todo: add question handling for text
+  const loadQuestionsText = () => {
+    const options = {
+      root: null,
+      rootMargin: "0px",
+      threshold: 1.0,
+    };
+
+    const observer = new IntersectionObserver(callback, options);
+
+    const callback = (entries, observer) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          let element = entry.target;
+
+          console.log(element);
+        }
+      });
+    };
+  };
+
+  const loadQuestionsPDF = () => {
+    // if no question is meant to trigger on current page, return
+    const question = questions.filter(
+      (question) => question.page_trigger + 1 === currentPage
+    );
+    if (!question.length) {
+      return <></>;
+    }
+
+    displayQuestion(question);
+  };
+
+  const displayQuestion = (question) => {
+    const wrongAnswers = question[0].wrong_answers;
+
+    // random integer between 0 and 3
+    const rightAnswerPosition = Math.floor(Math.random() * 4);
+
+    const randomizedAnswers = [
+      ...wrongAnswers.slice(0, rightAnswerPosition),
+      question[0].right_answer,
+      ...wrongAnswers.slice(rightAnswerPosition),
+    ].slice(0, 4);
+
+    return (
+      <div className="flex flex-col">
+        <p>{question[0].question}</p>
+        {randomizedAnswers.map((answer, i) => (
+          <button
+            key={i}
+            className="!bg-background rounded-lg hover:!bg-background-hover"
+          >
+            {answer}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   useEffect(() => {
-    fetchSections();
-  }, []);
+    fetchInfo();
+  }, [contentType, inputText, fileData]);
 
   return (
     <div className="flex flex-row-full h-full justify-between">
@@ -78,12 +144,23 @@ export default function Study() {
       )}
 
       {contentType === "file" && (
-        <div className="w-fit ml-65 p-1 border-1">
-          <Pdf src={location.state.fileURL} />
-        </div>
+        <>
+          <div className="w-fit ml-65 p-1 border-1">
+            <Pdf src={fileURL} onPageUpdate={(n) => setCurrentPage(n)} />
+          </div>
+          {!isLoading && loadQuestionsPDF()}
+        </>
       )}
 
-      <Stopwatch />
+      <div className="flex flex-col">
+        <Stopwatch />
+        <Link
+          className="mx-auto mt-auto mb-2 text-5xl h-24 w-44 rounded-lg p-3 !bg-red-500 flex justify-center items-center"
+          to={"/"}
+        >
+          Exit
+        </Link>
+      </div>
     </div>
   );
 }

@@ -23,7 +23,7 @@ function Home() {
         <p className="text-6xl">Fulfill</p>
         <p className="text-4xl mt-1">What are we reading today?</p>
       </div>
-      <div className="h-[50vh] w-[100vw] flex justify-start items-center mt-10 flex-col">
+      <div className="h-[50vh] w-[100vw] flex justify-start items-center pt-10 flex-col">
         <button
           onClick={() => setIsModalOpen(true)}
           className="w-80 h-26 text-3xl"

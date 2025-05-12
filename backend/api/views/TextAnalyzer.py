@@ -27,24 +27,7 @@ class TextAnalyzerView(APIView):
                 ],
                 config={
                     "response_mime_type": "application/json",
-                    "response_schema": {
-                        "type": "object",
-                        "properties": {
-                            "formatted_text": {
-                                "type": "string",
-                            },
-                            "logical_parts": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string",
-                                },
-                            },
-                        },
-                        "required": [
-                            "formatted_text",
-                            "logical_parts",
-                        ],
-                    },
+                    "response_schema": jsonSchema,
                 },
             )
         except Exception as e:
@@ -62,11 +45,57 @@ after the end of each important section text
 
 2. Identify and list the main logical parts/sections of the text as an array
 
+3. Construct questions relating the most key concepts of the document in the format of
+3 wrong answers and 1 right answer, returning an array of objects with values for:
+"question" (string), "wrong_answers" (array), "right answer" (string), "trigger_sentence" (sentence that
+appears after the key concept has been explained fully)
+
 Note: Return only the results without any explanation.
 
 Respond in the following JSON format:
 {
     "formatted_text": "formatted text here",
-    "logical_parts": ["part1", "part2", ...]
+    "logical_parts": ["part1", "part2", ...],
+    "questions": [
+        "question",
+        "wrong_answers": ["answer1", "answer2", ...]
+        "right_answer",
+        "trigger_sentence"
+    ]
 }
 """
+
+jsonSchema = {
+    "type": "object",
+    "properties": {
+        "formatted_text": {
+            "type": "string"
+        },
+        "logical_parts": {
+            "type": "array",
+            "items": {
+                "type": "string",
+            },
+        },
+        "questions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "question": {"type": "string"},
+                    "wrong_answers": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                        },
+                    },
+                    "right_answer": {"type": "string"},
+                    "trigger_sentence": {"type": "string"},
+                },
+                "required": ["question", "wrong_answers", "right_answer", "trigger_sentence"],
+            },
+        },
+    },
+    "required": ["formatted_text", "logical_parts", "questions"],
+}
+
