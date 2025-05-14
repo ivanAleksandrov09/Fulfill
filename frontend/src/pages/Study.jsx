@@ -19,9 +19,10 @@ export default function Study() {
 
   const fileURL = location.state.fileURL || null;
   const [currentPage, setCurrentPage] = useState(1);
-  const [questions, setQuestions] = useState([]);
 
+  const [questions, setQuestions] = useState([]);
   const [sections, setSections] = useState([]);
+  const [displayedQuestion, setDisplayedQuestion] = useState(null);
 
   const fetchInfo = async () => {
     try {
@@ -56,27 +57,6 @@ export default function Study() {
     }
   };
 
-  // todo: add question handling for text
-  const loadQuestionsText = () => {
-    const options = {
-      root: null,
-      rootMargin: "0px",
-      threshold: 1.0,
-    };
-
-    const observer = new IntersectionObserver(callback, options);
-
-    const callback = (entries, observer) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          let element = entry.target;
-
-          console.log(element);
-        }
-      });
-    };
-  };
-
   const loadQuestionsPDF = () => {
     // if no question is meant to trigger on current page, return
     const question = questions.filter(
@@ -86,39 +66,108 @@ export default function Study() {
       return <></>;
     }
 
-    displayQuestion(question);
+    return displayQuestion(question[0]);
   };
 
   const displayQuestion = (question) => {
-    const wrongAnswers = question[0].wrong_answers;
+    if (!question) {
+      return;
+    }
+
+    const wrongAnswers = question.wrong_answers;
 
     // random integer between 0 and 3
     const rightAnswerPosition = Math.floor(Math.random() * 4);
 
     const randomizedAnswers = [
       ...wrongAnswers.slice(0, rightAnswerPosition),
-      question[0].right_answer,
+      question.right_answer,
       ...wrongAnswers.slice(rightAnswerPosition),
     ].slice(0, 4);
 
+    const checkAnswer = (chosenIndex) => {
+      if (chosenIndex == rightAnswerPosition) {
+        alert("Correct!");
+        setDisplayedQuestion(null);
+      } else {
+        alert("Wrong answer!");
+      }
+    };
+
     return (
-      <div className="flex flex-col">
-        <p>{question[0].question}</p>
-        {randomizedAnswers.map((answer, i) => (
-          <button
-            key={i}
-            className="!bg-background rounded-lg hover:!bg-background-hover"
-          >
-            {answer}
-          </button>
-        ))}
+      <div className=" h-fit flex flex-col m-5 text-center border-1">
+        <p>{question.question}</p>
+        <div className="grid grid-cols-2">
+          {randomizedAnswers.map((answer, i) => (
+            <button
+              key={i}
+              onClick={() => checkAnswer(i)}
+              className="!bg-background rounded-lg hover:!bg-background-hover"
+            >
+              {answer}
+            </button>
+          ))}
+        </div>
       </div>
     );
   };
 
+  const processText = () => {
+    const lines = outputText.split("\n").filter((line) => line.length > 0);
+
+    const processedLines = lines.map((line) => {
+      const question = questions.find((q) => line.includes(q.trigger_sentence));
+      if (question) {
+        return `${line} [QUESTION:${JSON.stringify(question)}]`;
+      }
+      return line;
+    });
+
+    return processedLines.join("\n");
+  };
+
+  const QuestionButton = ({ question }) => {
+    return (
+      <button
+        onClick={() => setDisplayedQuestion(question)}
+        className="inline-block ml-2 px-2 py-1 bg-blue-500 rounded-b-full"
+      >
+        ❓
+      </button>
+    );
+  };
+
+  const QuestionText = ({ text }) => {
+    const parts = text.split("\n").filter((t) => t.length > 0);
+
+    return (
+      <p>
+        {parts.map((part, index) => {
+          if (part.includes("[QUESTION:")) {
+            try {
+              const [text, questionPart] = part.split("[QUESTION:");
+              const question = JSON.parse(questionPart.slice(0, -1));
+              return (
+                <span key={index}>
+                  {text}
+                  <QuestionButton question={question} />
+                </span>
+              );
+            } catch (e) {
+              console.error("JSON parse error:", e);
+              return <span key={index}>{part}</span>;
+            }
+          }
+          return <span key={index}>{part}</span>;
+        })}
+      </p>
+    );
+  };
+
   useEffect(() => {
-    fetchInfo();
-  }, [contentType, inputText, fileData]);
+    const awaitFetchInfo = async () => await fetchInfo();
+    awaitFetchInfo();
+  }, [contentType, fileData]);
 
   return (
     <div className="flex flex-row-full h-full justify-between">
@@ -138,9 +187,20 @@ export default function Study() {
       </div>
 
       {contentType === "text" && (
-        <div className="ml-65 h-full p-3 overflow-y-scroll">
-          <ReactMarkdown>{outputText}</ReactMarkdown>
-        </div>
+        <>
+          <div className="ml-65 h-full max-w-250 p-3 overflow-y-scroll">
+            <ReactMarkdown
+              components={{
+                p: ({ children }) => (
+                  <QuestionText text={children.toString()} />
+                ),
+              }}
+            >
+              {processText()}
+            </ReactMarkdown>
+          </div>
+          {!isLoading && displayQuestion(displayedQuestion)}
+        </>
       )}
 
       {contentType === "file" && (
