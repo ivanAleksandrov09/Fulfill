@@ -51,9 +51,10 @@ export default function Study() {
 
       setSections(response.data["logical_parts"]);
       setQuestions(response.data["questions"]);
-      setIsLoading(false);
     } catch (e) {
       console.log("Error fetching sections: ", e);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -95,7 +96,7 @@ export default function Study() {
     };
 
     return (
-      <div className=" h-fit flex flex-col m-5 text-center border-1">
+      <div className="h-fit flex flex-col m-5 pb-2 text-center border-1 rounded-2xl">
         <p>{question.question}</p>
         <div className="grid grid-cols-2">
           {randomizedAnswers.map((answer, i) => (
@@ -130,7 +131,7 @@ export default function Study() {
     return (
       <button
         onClick={() => setDisplayedQuestion(question)}
-        className="inline-block ml-2 px-2 py-1 bg-blue-500 rounded-b-full"
+        className="inline-block !mx-2 !px-2 !py-1 !rounded-full"
       >
         ❓
       </button>
@@ -148,17 +149,17 @@ export default function Study() {
               const [text, questionPart] = part.split("[QUESTION:");
               const question = JSON.parse(questionPart.slice(0, -1));
               return (
-                <span key={index}>
+                <div key={index}>
                   {text}
                   <QuestionButton question={question} />
-                </span>
+                </div>
               );
             } catch (e) {
               console.error("JSON parse error:", e);
-              return <span key={index}>{part}</span>;
+              return <div key={index}>{part}</div>;
             }
           }
-          return <span key={index}>{part}</span>;
+          return <div key={index}>{part}</div>;
         })}
       </p>
     );
@@ -170,57 +171,62 @@ export default function Study() {
   }, [contentType, fileData]);
 
   return (
-    <div className="flex flex-row-full h-full justify-between">
-      <div className="fixed left-0 h-full w-fit max-w-65 p-3 border-1 border-white">
-        <div>
-          <p className="text-4xl">Summary title</p>
-          <hr></hr>
-        </div>
-        <div className="h-[90vh] overflow-y-scroll p-3 mt-2">
-          {sections.map((section, i) => (
-            <div key={i} className="flex flex-col justify-center min-h-13">
-              <p className="text-xl">{section}</p>
-              <hr className="w-full"></hr>
+    <div className="flex flex-row w-full h-full justify-between">
+      {isLoading && <span className="loader"></span>}
+      {!isLoading && (
+        <>
+          <div className="fixed left-0 h-full w-fit max-w-65 p-3 border-1 border-white">
+            <div>
+              <p className="text-4xl text-center">Content</p>
+              <hr></hr>
             </div>
-          ))}
-        </div>
-      </div>
+            <div className="h-[90vh] overflow-y-scroll p-3 mt-2">
+              {sections.map((section, i) => (
+                <div key={i} className="flex flex-col justify-center min-h-13">
+                  <p className="text-xl">{section}</p>
+                  <hr className="w-full"></hr>
+                </div>
+              ))}
+            </div>
+          </div>
 
-      {contentType === "text" && (
-        <>
-          <div className="ml-65 h-full max-w-250 p-3 overflow-y-scroll">
-            <ReactMarkdown
-              components={{
-                p: ({ children }) => (
-                  <QuestionText text={children.toString()} />
-                ),
-              }}
+          {contentType === "text" && (
+            <>
+              <div className="ml-65 h-full max-w-250 p-3 overflow-y-scroll">
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => (
+                      <QuestionText text={children.toString()} />
+                    ),
+                  }}
+                >
+                  {processText()}
+                </ReactMarkdown>
+              </div>
+              {!isLoading && displayQuestion(displayedQuestion)}
+            </>
+          )}
+
+          {contentType === "file" && (
+            <>
+              <div className="w-fit ml-65 p-1 border-1">
+                <Pdf src={fileURL} onPageUpdate={(n) => setCurrentPage(n)} />
+              </div>
+              {!isLoading && loadQuestionsPDF()}
+            </>
+          )}
+
+          <div className="flex flex-col border-l-2">
+            <Stopwatch />
+            <Link
+              className="mx-auto mt-auto mb-2 text-5xl h-24 w-44 rounded-lg p-3 !bg-red-500 flex justify-center items-center"
+              to={"/"}
             >
-              {processText()}
-            </ReactMarkdown>
+              Exit
+            </Link>
           </div>
-          {!isLoading && displayQuestion(displayedQuestion)}
         </>
       )}
-
-      {contentType === "file" && (
-        <>
-          <div className="w-fit ml-65 p-1 border-1">
-            <Pdf src={fileURL} onPageUpdate={(n) => setCurrentPage(n)} />
-          </div>
-          {!isLoading && loadQuestionsPDF()}
-        </>
-      )}
-
-      <div className="flex flex-col">
-        <Stopwatch />
-        <Link
-          className="mx-auto mt-auto mb-2 text-5xl h-24 w-44 rounded-lg p-3 !bg-red-500 flex justify-center items-center"
-          to={"/"}
-        >
-          Exit
-        </Link>
-      </div>
     </div>
   );
 }

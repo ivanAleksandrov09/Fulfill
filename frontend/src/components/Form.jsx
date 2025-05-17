@@ -2,6 +2,7 @@ import { useState } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants";
+import { Link } from "react-router-dom";
 
 function Form({ route, method }) {
   const [username, setUsername] = useState("");
@@ -32,26 +33,41 @@ function Form({ route, method }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="form-container">
-      <h1>{name}</h1>
-      <input
-        className="form-input"
-        type="text"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        placeholder="Username"
-      />
-      <input
-        className="form-input"
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        placeholder="Password"
-      />
-      <button className="form-button" type="submit">
-        {name}
-      </button>
-    </form>
+    <div className="w-full h-full">
+      <p className="w-full h-[25vh] flex justify-center items-center text-8xl">
+        Fulfill
+      </p>
+      <form
+        onSubmit={handleSubmit}
+        className="w-full h-[75vh] flex flex-col justify-center items-center text-5xl gap-y-3"
+      >
+        <input
+          className="border-1 rounded-2xl p-2"
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Username"
+        />
+        <input
+          className="border-1 rounded-2xl p-2"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+        />
+        <button className="!rounded-2xl" type="submit">
+          {name}
+        </button>
+        {name === "Login" && (
+          <div className="flex flex-row gap-x-4">
+            <p>or</p>
+            <Link to={"/register"} className="underline hover:text-gray-300">
+              create a new account
+            </Link>
+          </div>
+        )}
+      </form>
+    </div>
   );
 }
 
