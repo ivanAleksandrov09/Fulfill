@@ -1,6 +1,7 @@
 import io
 import json
 
+from api.models import PDFDocument
 from google.genai.types import GenerateContentResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -53,6 +54,13 @@ class PDFAnalyzerView(APIView):
             return Response(
                 f"Error when generating content logical parts: {e}", status=500
             )
+        
+        newPDF = PDFDocument(
+            user = request.user,
+            PDF = uploadedFile,
+            documentData = json.loads(response.text)
+        )
+        newPDF.save()
 
         return Response(json.loads(response.text), status=200)
 
@@ -60,9 +68,11 @@ class PDFAnalyzerView(APIView):
 systemPrompt = """
 Given the following PDF document, please:
 
-1. Identify and list the main logical parts/sections of the document as an array
+1. Return a document name summarizing the entire pdf document
 
-2. Construct questions relating the most key concepts of the document in the format of
+2. Identify and list the main logical parts/sections of the document as an array
+
+3. Construct questions relating the most key concepts of the document in the format of
 3 wrong answers and 1 right answer, returning an array of objects with values for:
 "question" (string), "wrong_answers" (array), "right answer" (string), "page_trigger" (num
 which indicates after which page is read should the question appear)
@@ -71,6 +81,7 @@ Note: Return only the results without any explanation.
 
 Respond in the following JSON format:
 {
+    "summarized_name": "text",
     "logical_parts": ["part1", "part2", ...]
     "questions": [
         "question",
@@ -84,6 +95,9 @@ Respond in the following JSON format:
 jsonSchema = {
     "type": "object",
     "properties": {
+        "summarized_name": {
+            "type": "string"
+        },
         "logical_parts": {
             "type": "array",
             "items": {
@@ -109,6 +123,6 @@ jsonSchema = {
             },
         },
     },
-    "required": ["logical_parts", "questions"],
+    "required": ["summarized_name", "logical_parts", "questions"],
 }
 

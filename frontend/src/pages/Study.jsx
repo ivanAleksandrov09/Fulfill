@@ -20,6 +20,7 @@ export default function Study() {
   const fileURL = location.state.fileURL || null;
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [summarizedName, setSummarizedName] = useState("");
   const [questions, setQuestions] = useState([]);
   const [sections, setSections] = useState([]);
   const [displayedQuestion, setDisplayedQuestion] = useState(null);
@@ -49,6 +50,7 @@ export default function Study() {
         return [];
       }
 
+      setSummarizedName(response.data["summarized_name"]);
       setSections(response.data["logical_parts"]);
       setQuestions(response.data["questions"]);
     } catch (e) {
@@ -177,7 +179,7 @@ export default function Study() {
         <>
           <div className="fixed left-0 h-full w-fit max-w-65 p-3 border-1 border-white">
             <div>
-              <p className="text-4xl text-center">Content</p>
+              <p className="text-2xl text-center pb-2">{summarizedName}</p>
               <hr></hr>
             </div>
             <div className="h-[90vh] overflow-y-scroll p-3 mt-2">

@@ -1,5 +1,6 @@
 import json
 
+from api.models import TextDocument
 from google.genai.types import GenerateContentResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -34,18 +35,27 @@ class TextAnalyzerView(APIView):
             return Response(
                 f"Error when generating content logical parts: {e}", status=500
             )
+        
+        newTextDocument, created = TextDocument.objects.get_or_create(
+            user=request.user,
+            documentData = json.loads(response.text)
+        )
+        newTextDocument.save()
 
         return Response(json.loads(response.text), status=200)
 
 
 systemPrompt = """
 Given the following text, please:
-1. Return the given text back formatted to maximize readability and retention by adding line breaks
+
+1. Return a text name summarizing the entire text
+
+2. Return the given text back formatted to maximize readability and retention by adding line breaks
 after the end of each important section text
 
-2. Identify and list the main logical parts/sections of the text as an array
+3. Identify and list the main logical parts/sections of the text as an array
 
-3. Construct questions relating the most key concepts of the document in the format of
+4. Construct questions relating the most key concepts of the document in the format of
 3 wrong answers and 1 right answer, returning an array of objects with values for:
 "question" (string), "wrong_answers" (array), "right answer" (string), "trigger_sentence" (sentence that
 appears after the key concept has been explained fully)
@@ -54,6 +64,7 @@ Note: Return only the results without any explanation.
 
 Respond in the following JSON format:
 {
+    "summarized_name": "text",
     "formatted_text": "formatted text here",
     "logical_parts": ["part1", "part2", ...],
     "questions": [
@@ -68,6 +79,9 @@ Respond in the following JSON format:
 jsonSchema = {
     "type": "object",
     "properties": {
+        "summarized_name": {
+            "type": "string"
+        },
         "formatted_text": {
             "type": "string"
         },
@@ -96,6 +110,6 @@ jsonSchema = {
             },
         },
     },
-    "required": ["formatted_text", "logical_parts", "questions"],
+    "required": ["summarized_name", "formatted_text", "logical_parts", "questions"],
 }
 
