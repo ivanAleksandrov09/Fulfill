@@ -36,13 +36,16 @@ class TextAnalyzerView(APIView):
                 f"Error when generating content logical parts: {e}", status=500
             )
         
+        finalizedJSON = json.loads(response.text)
+        
         newTextDocument, created = TextDocument.objects.get_or_create(
             user=request.user,
-            documentData = json.loads(response.text)
+            document_data = finalizedJSON,
+            document_name = finalizedJSON["summarized_name"]
         )
         newTextDocument.save()
 
-        return Response(json.loads(response.text), status=200)
+        return Response(finalizedJSON, status=200)
 
 
 systemPrompt = """

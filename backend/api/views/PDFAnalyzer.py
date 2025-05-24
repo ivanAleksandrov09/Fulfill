@@ -1,3 +1,4 @@
+import hashlib
 import io
 import json
 
@@ -7,6 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.core.exceptions import ObjectDoesNotExist
 
 from .GeminiClient import client
 
@@ -28,6 +30,14 @@ class PDFAnalyzerView(APIView):
             fileBytes = uploadedFile.read()
         except Exception as e:
             return Response(f"Error reading uploaded PDF file: {e}", status=500)
+        
+        hashKey = hashlib.sha256(fileBytes).hexdigest()
+        try:
+            foundDocument = PDFDocument.objects.get(saved_hash=hashKey)
+            return Response(foundDocument.document_data, status=200)
+        except ObjectDoesNotExist:
+            pass
+
 
         clientUploadedFile = None
         try:
@@ -55,14 +65,19 @@ class PDFAnalyzerView(APIView):
                 f"Error when generating content logical parts: {e}", status=500
             )
         
-        newPDF = PDFDocument(
+        finalizedJSON = json.loads(response.text)
+        
+        print(finalizedJSON["summarized_name"])
+        newPDF: PDFDocument = PDFDocument(
             user = request.user,
             PDF = uploadedFile,
-            documentData = json.loads(response.text)
+            document_data = finalizedJSON,
+            document_name = finalizedJSON["summarized_name"],
+            saved_hash = hashKey
         )
         newPDF.save()
 
-        return Response(json.loads(response.text), status=200)
+        return Response(finalizedJSON, status=200)
 
 
 systemPrompt = """
