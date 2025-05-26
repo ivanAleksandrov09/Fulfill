@@ -12,24 +12,33 @@ class SearchContentView(APIView):
     def get(self, request: Request, *args, **kwargs):
         query = request.GET.get("query")
 
+        queryWords = query.split(" ")
+        print(queryWords)
+
         if not query:
             return Response("Please provide a query.", status=400)
         
         results = []
 
-        pdfDocuments = PDFDocument.objects.filter(document_name__icontains=query)
-        if pdfDocuments:
-            pdfSerializer = PDFDocumentSerializer(pdfDocuments, many=True)
-            results.append(pdfSerializer.data)
+        for word in queryWords:
+            pdfDocuments = PDFDocument.objects.filter(document_name__icontains=word)
+            if pdfDocuments:
+                pdfSerializer = PDFDocumentSerializer(pdfDocuments, many=True)
+                results.extend(pdfSerializer.data)
 
-        textDocuments = TextDocument.objects.filter(document_name__icontains=query)
-        if textDocuments:
-            textSerializer = TextDocumentSerializer(textDocuments, many=True)
-            results.append(textSerializer.data)
+            textDocuments = TextDocument.objects.filter(document_name__icontains=word)
+            if textDocuments:
+                textSerializer = TextDocumentSerializer(textDocuments, many=True)
+                results.extend(textSerializer.data)
 
         if not results:
             return Response(results, status=200)
-                        
-        documentsJSON = [result[0] for result in results]
-        return Response(documentsJSON, status=200)
+
+        # we filter out duplicate data by turning it into a dictionary with keys
+        # being the document name, such that upon calling .values()
+        # the duplicate results are removed, after which we can safely turn
+        # the dictionary back into a list
+        uniqueResults = {d['document_name']: d for d in results}.values()
+
+        return Response(list(uniqueResults), status=200)
 

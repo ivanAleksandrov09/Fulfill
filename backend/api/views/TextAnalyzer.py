@@ -62,14 +62,16 @@ class TextAnalyzerView(APIView):
 systemPrompt = """
 Given the following text, please:
 
-1. Return a text name summarizing the entire text
+1. Return a list of keywords that can be used to find this document
 
-2. Return the given text back formatted to maximize readability and retention by adding line breaks
+2. Return a text name summarizing the entire text
+
+3. Return the given text back formatted to maximize readability and retention by adding line breaks
 after the end of each important section text
 
-3. Identify and list the main logical parts/sections of the text as an array
+4. Identify and list the main logical parts/sections of the text as an array
 
-4. Construct questions relating the most key concepts of the document in the format of
+5. Construct questions relating the most key concepts of the document in the format of
 3 wrong answers and 1 right answer, returning an array of objects with values for:
 "question" (string), "wrong_answers" (array), "right answer" (string), "trigger_sentence" (sentence that
 appears after the key concept has been explained fully)
@@ -78,6 +80,7 @@ Note: Return only the results without any explanation.
 
 Respond in the following JSON format:
 {
+    "keywords": ["keyword1", "keyword2", ...]
     "summarized_name": "text",
     "formatted_text": "formatted text here",
     "logical_parts": ["part1", "part2", ...],
@@ -93,6 +96,10 @@ Respond in the following JSON format:
 jsonSchema = {
     "type": "object",
     "properties": {
+        "keywords": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
         "summarized_name": {
             "type": "string"
         },
@@ -124,6 +131,6 @@ jsonSchema = {
             },
         },
     },
-    "required": ["summarized_name", "formatted_text", "logical_parts", "questions"],
+    "required": ["keywords", "summarized_name", "formatted_text", "logical_parts", "questions"],
 }
 

@@ -82,11 +82,13 @@ class PDFAnalyzerView(APIView):
 systemPrompt = """
 Given the following PDF document, please:
 
-1. Return a document name summarizing the entire pdf document
+1. Return a list of keywords that can be used to find this document
 
-2. Identify and list the main logical parts/sections of the document as an array
+2. Return a document name summarizing the entire pdf document
 
-3. Construct questions relating the most key concepts of the document in the format of
+3. Identify and list the main logical parts/sections of the document as an array
+
+4. Construct questions relating the most key concepts of the document in the format of
 3 wrong answers and 1 right answer, returning an array of objects with values for:
 "question" (string), "wrong_answers" (array), "right answer" (string), "page_trigger" (num
 which indicates after which page is read should the question appear)
@@ -95,6 +97,7 @@ Note: Return only the results without any explanation.
 
 Respond in the following JSON format:
 {
+    "keywords": ["keyword1", "keyword2", ...]
     "summarized_name": "text",
     "logical_parts": ["part1", "part2", ...]
     "questions": [
@@ -109,6 +112,10 @@ Respond in the following JSON format:
 jsonSchema = {
     "type": "object",
     "properties": {
+        "keywords": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
         "summarized_name": {
             "type": "string"
         },
@@ -137,6 +144,6 @@ jsonSchema = {
             },
         },
     },
-    "required": ["summarized_name", "logical_parts", "questions"],
+    "required": ["keywords", "summarized_name", "logical_parts", "questions"],
 }
 

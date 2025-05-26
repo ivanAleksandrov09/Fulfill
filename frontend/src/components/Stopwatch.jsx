@@ -4,9 +4,9 @@ const SECOND = 1000;
 const MINUTE = SECOND * 60;
 const HOUR = MINUTE * 60;
 
-export default function Stopwatch() {
-  const startTimeRef = useRef(0);
+export default function Stopwatch({ onCall }) {
   const [time, setTime] = useState(0);
+  const startTimeRef = useRef(0);
   const [isRunning, setIsRunning] = useState(false);
 
   useEffect(() => {
@@ -19,6 +19,10 @@ export default function Stopwatch() {
     }
     return () => clearInterval(intervalId);
   }, [isRunning]);
+
+  useEffect(() => {
+    onCall(time);
+  }, [time]);
 
   const hours = Math.floor(time / HOUR);
   const minutes = Math.floor((time / MINUTE) % 60);

@@ -5,11 +5,14 @@ import api from "../api";
 import Pdf from "../components/Pdf";
 import Stopwatch from "../components/Stopwatch";
 import { useFileContext } from "../components/FileContext";
+import FinishModal from "../components/FinishModal";
 
 // Page where the user can focus/study their uploaded text
 export default function Study() {
   const { fileData } = useFileContext();
   const [isLoading, setIsLoading] = useState(true);
+  const [isFinished, setIsFinished] = useState(false);
+  const [savedTime, setSavedTime] = useState(0);
 
   const location = useLocation();
   const contentType = location.state.contentType;
@@ -25,6 +28,7 @@ export default function Study() {
   const [summarizedName, setSummarizedName] = useState("");
   const [questions, setQuestions] = useState([]);
   const [sections, setSections] = useState([]);
+  const [keywords, setKeywords] = useState([]);
   const [displayedQuestion, setDisplayedQuestion] = useState(null);
 
   const fetchInfo = async () => {
@@ -63,6 +67,7 @@ export default function Study() {
       setSummarizedName(response.data["summarized_name"]);
       setSections(response.data["logical_parts"]);
       setQuestions(response.data["questions"]);
+      setKeywords(response.data["keywords"]);
     } catch (e) {
       console.log("Error fetching sections: ", e);
     } finally {
@@ -188,11 +193,11 @@ export default function Study() {
       {!isLoading && (
         <>
           <div className="fixed left-0 h-full w-fit max-w-65 p-3 border-1 border-white">
-            <div>
+            <div className="h-[8vh]">
               <p className="text-2xl text-center pb-2">{summarizedName}</p>
               <hr></hr>
             </div>
-            <div className="h-[90vh] overflow-y-scroll p-3 mt-2">
+            <div className="h-[75vh] overflow-y-scroll p-3 mt-2 mb-0.5">
               {sections.map((section, i) => (
                 <div key={i} className="flex flex-col justify-center min-h-13">
                   <p className="text-xl">{section}</p>
@@ -200,11 +205,20 @@ export default function Study() {
                 </div>
               ))}
             </div>
+            <hr></hr>
+            <div className="w-full h-[14vh] flex items-center justify-center">
+              <button
+                onClick={() => setIsFinished(true)}
+                className="w-full text-5xl rounded-lg py-2 bg-green-500 hover:bg-green-600 transition-colors"
+              >
+                Finish
+              </button>
+            </div>
           </div>
 
           {contentType === "text" && (
             <>
-              <div className="ml-65 h-full max-w-250 p-3 overflow-y-scroll">
+              <div className="ml-65 h-screen max-w-250 p-3 overflow-y-scroll">
                 <ReactMarkdown
                   components={{
                     p: ({ children }) => (
@@ -229,7 +243,7 @@ export default function Study() {
           )}
 
           <div className="flex flex-col border-l-2">
-            <Stopwatch />
+            <Stopwatch onCall={(t) => setSavedTime(t)} />
             <Link
               className="mx-auto mt-auto mb-2 text-5xl h-24 w-44 rounded-lg p-3 !bg-red-500 flex justify-center items-center"
               to={"/"}
@@ -237,6 +251,12 @@ export default function Study() {
               Exit
             </Link>
           </div>
+          {isFinished && (
+            <FinishModal
+              query={keywords}
+              totalTime={savedTime > 0 ? savedTime : -1}
+            />
+          )}
         </>
       )}
     </div>
