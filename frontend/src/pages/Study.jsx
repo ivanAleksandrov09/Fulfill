@@ -14,6 +14,8 @@ export default function Study() {
   const location = useLocation();
   const contentType = location.state.contentType;
 
+  const jsonData = location.state.json || null;
+
   const inputText = location.state.text || null;
   const [outputText, setOutputText] = useState(inputText || null);
 
@@ -29,20 +31,28 @@ export default function Study() {
     try {
       let response;
       if (contentType === "text") {
-        response = await api.post("/api/analyze-text/", {
-          text: inputText,
-        });
+        if (jsonData) {
+          response = { data: jsonData, status: 200 };
+        } else {
+          response = await api.post("/api/analyze-text/", {
+            text: inputText,
+          });
+        }
 
         setOutputText(response.data["formatted_text"]);
       } else if (contentType === "file") {
-        const formData = new FormData();
-        formData.append("file", fileData);
+        if (jsonData) {
+          response = { data: jsonData, status: 200 };
+        } else {
+          const formData = new FormData();
+          formData.append("file", fileData);
 
-        response = await api.post("/api/analyze-pdf/", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
+          response = await api.post("/api/analyze-pdf/", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          });
+        }
       }
 
       if (response.status != 200) {

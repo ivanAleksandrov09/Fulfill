@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Modal from "../components/Modal";
+import InputModal from "../components/InputModal";
+import SearchModal from "../components/SearchModal";
 import api from "../api";
 
 function Home() {
   const [username, setUsername] = useState("GUEST");
 
   const [text, setText] = useState("Paste your text here...");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isInputModalOpen, setIsInputModalOpen] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const logOut = () => {
@@ -49,21 +51,32 @@ function Home() {
         <p className="text-6xl">Fulfill</p>
         <p className="text-4xl mt-1">What are we reading today?</p>
       </div>
-      <div className="h-[50vh] w-[100vw] flex justify-start items-center pt-10 flex-col">
+      <div className="h-[50vh] w-[100vw] flex justify-start items-center pt-10 flex-col gap-y-15">
         <button
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => setIsInputModalOpen(true)}
           className="w-80 h-26 text-3xl"
         >
           Upload text
         </button>
 
-        {isModalOpen && (
-          <Modal
+        <button
+          onClick={() => setIsSearchModalOpen(true)}
+          className="w-80 h-26 text-3xl"
+        >
+          Browse content
+        </button>
+
+        {isInputModalOpen && (
+          <InputModal
             initialText={text}
             onSubmitText={handleTextUpdate}
             onSubmitFile={handleFileUpdate}
-            onClose={() => setIsModalOpen(false)}
+            onClose={() => setIsInputModalOpen(false)}
           />
+        )}
+
+        {isSearchModalOpen && (
+          <SearchModal onClose={() => setIsSearchModalOpen(false)} />
         )}
       </div>
     </>

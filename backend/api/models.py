@@ -7,6 +7,7 @@ class TextDocument(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     document_name = models.CharField(default="Empty")
     document_data = models.JSONField()
+    saved_hash = models.CharField(default="NULL")
 
 class PDFDocument(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

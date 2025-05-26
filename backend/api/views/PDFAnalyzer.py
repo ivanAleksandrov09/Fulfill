@@ -67,7 +67,6 @@ class PDFAnalyzerView(APIView):
         
         finalizedJSON = json.loads(response.text)
         
-        print(finalizedJSON["summarized_name"])
         newPDF: PDFDocument = PDFDocument(
             user = request.user,
             PDF = uploadedFile,

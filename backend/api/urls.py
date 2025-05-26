@@ -1,5 +1,3 @@
-from django.conf import settings
-from django.conf.urls.static import static
 from django.urls import path
 
 from .views.PDFAnalyzer import PDFAnalyzerView
@@ -12,4 +10,4 @@ urlpatterns = [
     path("analyze-pdf/", PDFAnalyzerView.as_view()),
     path("user-info/", UserInfoView.as_view()),
     path("documents/search/", SearchContentView.as_view()),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+]

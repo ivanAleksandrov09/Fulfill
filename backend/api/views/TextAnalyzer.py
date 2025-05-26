@@ -1,6 +1,8 @@
+import hashlib
 import json
 
 from api.models import TextDocument
+from django.core.exceptions import ObjectDoesNotExist
 from google.genai.types import GenerateContentResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -18,6 +20,14 @@ class TextAnalyzerView(APIView):
 
         if not inputText:
             return Response("Input text is required", status=400)
+
+        hashKey = hashlib.sha256(inputText.encode('utf-8')).hexdigest()
+        try:
+            foundDocument = TextDocument.objects.get(saved_hash=hashKey)
+            return Response(foundDocument.document_data, status=200)
+        except ObjectDoesNotExist:
+            pass
+
 
         try:
             response: GenerateContentResponse = client.models.generate_content(
@@ -41,7 +51,8 @@ class TextAnalyzerView(APIView):
         newTextDocument, created = TextDocument.objects.get_or_create(
             user=request.user,
             document_data = finalizedJSON,
-            document_name = finalizedJSON["summarized_name"]
+            document_name = finalizedJSON["summarized_name"],
+            saved_hash = hashKey
         )
         newTextDocument.save()
 
