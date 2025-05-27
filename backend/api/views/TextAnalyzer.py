@@ -4,6 +4,7 @@ import json
 from api.models import TextDocument
 from django.core.exceptions import ObjectDoesNotExist
 from google.genai.types import GenerateContentResponse
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -19,12 +20,12 @@ class TextAnalyzerView(APIView):
         inputText = request.data.get("text")
 
         if not inputText:
-            return Response("Input text is required", status=400)
+            return Response("Input text is required", status=status.HTTP_400_BAD_REQUEST)
 
         hashKey = hashlib.sha256(inputText.encode('utf-8')).hexdigest()
         try:
             foundDocument = TextDocument.objects.get(saved_hash=hashKey)
-            return Response(foundDocument.document_data, status=200)
+            return Response(foundDocument.document_data, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
             pass
 
@@ -43,7 +44,7 @@ class TextAnalyzerView(APIView):
             )
         except Exception as e:
             return Response(
-                f"Error when generating content logical parts: {e}", status=500
+                f"Error when generating content logical parts: {e}", status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         
         finalizedJSON = json.loads(response.text)
@@ -56,7 +57,7 @@ class TextAnalyzerView(APIView):
         )
         newTextDocument.save()
 
-        return Response(finalizedJSON, status=200)
+        return Response(finalizedJSON, status=status.HTTP_200_OK)
 
 
 systemPrompt = """

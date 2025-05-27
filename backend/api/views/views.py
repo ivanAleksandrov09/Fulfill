@@ -1,10 +1,11 @@
-from django.shortcuts import render
 from django.contrib.auth.models import User
-from rest_framework import generics
-from ..serializers import UserSerializer
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.views import APIView
+from django.shortcuts import render
+from rest_framework import generics, status
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from ..serializers import UserSerializer
 
 # Create your views here.
 
@@ -20,5 +21,5 @@ class UserInfoView(APIView):
     def get(self, request):
         user = str(request.user)
 
-        return Response(user, 200)
+        return Response(user, status=status.HTTP_200_OK)
 

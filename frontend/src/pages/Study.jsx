@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+import { Link, useLocation } from "react-router-dom";
 import api from "../api";
-import Pdf from "../components/Pdf";
-import Stopwatch from "../components/Stopwatch";
 import { useFileContext } from "../components/FileContext";
 import FinishModal from "../components/FinishModal";
+import Pdf from "../components/Pdf";
+import Stopwatch from "../components/Stopwatch";
+import { useTimeContext } from "../components/TimeContext";
 
 // Page where the user can focus/study their uploaded text
 export default function Study() {
   const { fileData } = useFileContext();
+  const { timeData } = useTimeContext();
   const [isLoading, setIsLoading] = useState(true);
   const [isFinished, setIsFinished] = useState(false);
-  const [savedTime, setSavedTime] = useState(0);
 
   const location = useLocation();
   const contentType = location.state.contentType;
@@ -25,10 +26,7 @@ export default function Study() {
   const fileURL = location.state.fileURL || null;
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [summarizedName, setSummarizedName] = useState("");
-  const [questions, setQuestions] = useState([]);
-  const [sections, setSections] = useState([]);
-  const [keywords, setKeywords] = useState([]);
+  const [queryResult, setQueryResult] = useState(null);
   const [displayedQuestion, setDisplayedQuestion] = useState(null);
 
   const fetchInfo = async () => {
@@ -64,10 +62,7 @@ export default function Study() {
         return [];
       }
 
-      setSummarizedName(response.data["summarized_name"]);
-      setSections(response.data["logical_parts"]);
-      setQuestions(response.data["questions"]);
-      setKeywords(response.data["keywords"]);
+      setQueryResult(response.data);
     } catch (e) {
       console.log("Error fetching sections: ", e);
     } finally {
@@ -76,8 +71,9 @@ export default function Study() {
   };
 
   const loadQuestionsPDF = () => {
+    if (!queryResult?.questions) return <></>;
     // if no question is meant to trigger on current page, return
-    const question = questions.filter(
+    const question = queryResult.questions.filter(
       (question) => question.page_trigger + 1 === currentPage
     );
     if (!question.length) {
@@ -131,10 +127,13 @@ export default function Study() {
   };
 
   const processText = () => {
+    if (!queryResult?.questions) return "";
     const lines = outputText.split("\n").filter((line) => line.length > 0);
 
     const processedLines = lines.map((line) => {
-      const question = questions.find((q) => line.includes(q.trigger_sentence));
+      const question = queryResult.questions.find((q) =>
+        line.includes(q.trigger_sentence)
+      );
       if (question) {
         return `${line} [QUESTION:${JSON.stringify(question)}]`;
       }
@@ -190,15 +189,17 @@ export default function Study() {
   return (
     <div className="flex flex-row w-full h-full justify-between">
       {isLoading && <span className="loader"></span>}
-      {!isLoading && (
+      {!isLoading && queryResult && (
         <>
-          <div className="fixed left-0 h-full w-fit max-w-65 p-3 border-1 border-white">
-            <div className="h-[8vh]">
-              <p className="text-2xl text-center pb-2">{summarizedName}</p>
+          <div className="fixed left-0 h-full w-fit max-w-65 p-3 border-1 border-white flex flex-col justify-around">
+            <div className="min-h-[8vh]">
+              <p className="text-2xl text-center pb-2">
+                {queryResult.summarized_name}
+              </p>
               <hr></hr>
             </div>
             <div className="h-[75vh] overflow-y-scroll p-3 mt-2 mb-0.5">
-              {sections.map((section, i) => (
+              {queryResult.logical_parts.map((section, i) => (
                 <div key={i} className="flex flex-col justify-center min-h-13">
                   <p className="text-xl">{section}</p>
                   <hr className="w-full"></hr>
@@ -206,10 +207,10 @@ export default function Study() {
               ))}
             </div>
             <hr></hr>
-            <div className="w-full h-[14vh] flex items-center justify-center">
+            <div className="w-full flex items-center justify-center mt-0.5">
               <button
                 onClick={() => setIsFinished(true)}
-                className="w-full text-5xl rounded-lg py-2 bg-green-500 hover:bg-green-600 transition-colors"
+                className="w-full text-4xl rounded-lg py-2 bg-green-500 hover:bg-green-600 transition-colors"
               >
                 Finish
               </button>
@@ -245,7 +246,7 @@ export default function Study() {
           <div className="flex flex-col border-l-2">
             <Stopwatch onCall={(t) => setSavedTime(t)} />
             <Link
-              className="mx-auto mt-auto mb-2 text-5xl h-24 w-44 rounded-lg p-3 !bg-red-500 flex justify-center items-center"
+              className="transition font-medium shadow-md mx-auto mt-auto mb-2 text-5xl h-24 w-44 rounded-lg p-3 !bg-red-500 hover:!bg-red-800 flex justify-center items-center"
               to={"/"}
             >
               Exit
@@ -253,8 +254,8 @@ export default function Study() {
           </div>
           {isFinished && (
             <FinishModal
-              query={keywords}
-              totalTime={savedTime > 0 ? savedTime : -1}
+              query={queryResult.keywords}
+              totalTime={timeData.current > 0 ? timeData.current : -1}
             />
           )}
         </>

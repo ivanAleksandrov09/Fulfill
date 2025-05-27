@@ -25,7 +25,7 @@ export default function SearchModal({ onClose }) {
             X
           </button>
         </form>
-        <QueryResults query={query} />
+        <QueryResults query={query} refreshOnRedirect={false} />
       </div>
     </div>
   );

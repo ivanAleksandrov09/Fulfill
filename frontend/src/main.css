@@ -8,6 +8,7 @@
     --color-background-selected: #191919;
     --color-primary: #4A9EFF;
     --color-primary-hover: #1a85ff;
+    --transition-speed: 0.2s;
 }
 
 #root {
@@ -19,19 +20,32 @@
 
 button {
     background-color: var(--color-primary);
-    border-radius: 3px;
-    padding: 1ch;
+    border-radius: 4px;
+    padding: 0.8rem 1.2rem;
+    transition: all var(--transition-speed) ease-in-out;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 button:hover {
     cursor: pointer;
     background-color: var(--color-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
 textarea {
-    border: 1px solid white;
-    border-radius: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
     padding: 1ch;
+    background-color: rgba(255, 255, 255, 0.05);
+    transition: border-color var(--transition-speed) ease-in-out;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
 }
 
 .loader {
@@ -68,7 +82,7 @@ textarea {
 }
 
 @keyframes prixClipFix {
-    0% {clip-path: polygon(50% 50%, 0 0, 0 0, 0 0, 0 0, 0 0)}
+    0% {clip-path: polygon(50% 50%, 0 0, 0 0, 0 0, 0 0, 0 0, 0 0)}
     50% {clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 0, 100% 0, 100% 0)}
     75%, 100% {clip-path: polygon(50% 50%, 0 0, 100% 0, 100% 100%, 100% 100%, 100% 100%)}
 }

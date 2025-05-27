@@ -42,7 +42,7 @@ export default function Pdf({ src, onPageUpdate }) {
       >
         <Page pageNumber={pageNumber} />
       </Document>
-      <p>
+      <p className="font-medium">
         Page {pageNumber} of {numPages}
       </p>
     </div>

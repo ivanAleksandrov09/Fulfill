@@ -11,11 +11,14 @@ export default function InputModal({
 
   const [localText, setLocalText] = useState(initialText);
   const [inputType, setInputType] = useState("text");
-  const [loading, setLoading] = useState(false);
 
   const handleTextSubmit = (e) => {
     e.preventDefault();
-    onSubmitText(localText);
+    if (!localText.trim()) {
+      alert("Please provide text!");
+    } else {
+      onSubmitText(localText);
+    }
   };
 
   const handleFileSubmit = async (e) => {

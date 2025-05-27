@@ -2,18 +2,20 @@ import { useEffect, useState } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
 
-export default function QueryResults({ query }) {
+export default function QueryResults({ query, refreshOnRedirect }) {
   const [searchResults, setSearchResults] = useState([]);
   const navigate = useNavigate();
 
   const handleClick = (searchResult) => {
+    // We need to refresh the page if we are redirecting from the Study
+    // page in order to update all the JSON data
     if (searchResult.document_data.formatted_text) {
-      navigate(0);
+      if (refreshOnRedirect) navigate(0);
       navigate("/Study", {
         state: { json: searchResult.document_data, contentType: "text" },
       });
     } else {
-      navigate(0);
+      if (refreshOnRedirect) navigate(0);
       navigate("/Study", {
         state: {
           contentType: "file",
@@ -35,7 +37,14 @@ export default function QueryResults({ query }) {
         params: { query },
       });
 
-      setSearchResults(response.data);
+      // make sure the document doesn't recommend itself by comparing it's own
+      // keywords joined together with the query variable
+      const results = response.data.filter((queryResult) => {
+        let currentQuery = queryResult.document_data.keywords.join(" ");
+        return currentQuery != query;
+      });
+
+      setSearchResults(results);
     } catch (e) {
       console.log("Error when handling querying: ", e);
       alert("There was an error in the server for querying your search! Sorry");

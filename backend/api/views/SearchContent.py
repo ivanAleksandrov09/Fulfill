@@ -1,5 +1,6 @@
 from api.models import PDFDocument, TextDocument
 from api.serializers import PDFDocumentSerializer, TextDocumentSerializer
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -13,10 +14,9 @@ class SearchContentView(APIView):
         query = request.GET.get("query")
 
         queryWords = query.split(" ")
-        print(queryWords)
 
         if not query:
-            return Response("Please provide a query.", status=400)
+            return Response("Please provide a query.", status=status.HTTP_400_BAD_REQUEST)
         
         results = []
 
@@ -32,7 +32,7 @@ class SearchContentView(APIView):
                 results.extend(textSerializer.data)
 
         if not results:
-            return Response(results, status=200)
+            return Response(results, status=status.HTTP_200_OK)
 
         # we filter out duplicate data by turning it into a dictionary with keys
         # being the document name, such that upon calling .values()
@@ -40,5 +40,5 @@ class SearchContentView(APIView):
         # the dictionary back into a list
         uniqueResults = {d['document_name']: d for d in results}.values()
 
-        return Response(list(uniqueResults), status=200)
+        return Response(list(uniqueResults), status=status.HTTP_200_OK)
 

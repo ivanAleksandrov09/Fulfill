@@ -3,12 +3,13 @@ import io
 import json
 
 from api.models import PDFDocument
+from django.core.exceptions import ObjectDoesNotExist
 from google.genai.types import GenerateContentResponse
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from django.core.exceptions import ObjectDoesNotExist
 
 from .GeminiClient import client
 
@@ -20,21 +21,21 @@ class PDFAnalyzerView(APIView):
         uploadedFile = request.FILES["file"]
 
         if not uploadedFile:
-            return Response("Input file is required", status=400)
+            return Response("Input file is required", status=status.HTTP_400_BAD_REQUEST)
 
         if not uploadedFile.name.lower().endswith(".pdf"):
-            return Response({"error": "Uploaded file is not a PDF"}, status=400)
+            return Response({"error": "Uploaded file is not a PDF"}, status=status.HTTP_400_BAD_REQUEST)
 
         fileBytes = None
         try:
             fileBytes = uploadedFile.read()
         except Exception as e:
-            return Response(f"Error reading uploaded PDF file: {e}", status=500)
+            return Response(f"Error reading uploaded PDF file: {e}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
         hashKey = hashlib.sha256(fileBytes).hexdigest()
         try:
             foundDocument = PDFDocument.objects.get(saved_hash=hashKey)
-            return Response(foundDocument.document_data, status=200)
+            return Response(foundDocument.document_data, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
             pass
 
@@ -45,7 +46,7 @@ class PDFAnalyzerView(APIView):
                 file=io.BytesIO(fileBytes), config={"mime_type": "application/pdf"}
             )
         except Exception as e:
-            return Response(f"Error when uploading PDF file to client: {e}", status=500)
+            return Response(f"Error when uploading PDF file to client: {e}", status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
         try:
             response: GenerateContentResponse = client.models.generate_content(
@@ -62,7 +63,7 @@ class PDFAnalyzerView(APIView):
         except Exception as e:
             print(e)
             return Response(
-                f"Error when generating content logical parts: {e}", status=500
+                f"Error when generating content logical parts: {e}", status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
         
         finalizedJSON = json.loads(response.text)
@@ -76,7 +77,7 @@ class PDFAnalyzerView(APIView):
         )
         newPDF.save()
 
-        return Response(finalizedJSON, status=200)
+        return Response(finalizedJSON, status=status.HTTP_200_OK)
 
 
 systemPrompt = """

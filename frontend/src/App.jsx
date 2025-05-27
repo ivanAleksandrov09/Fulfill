@@ -6,6 +6,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
 import Study from "./pages/Study";
+import { TimeProvider } from "./components/TimeContext";
 
 function Logout() {
   localStorage.clear();
@@ -27,7 +28,9 @@ function App() {
             //protected route here makes sure you are logged in before accesing
             <ProtectedRoute>
               <FileProvider>
-                <Home />
+                <TimeProvider>
+                  <Home />
+                </TimeProvider>
               </FileProvider>
             </ProtectedRoute>
           }
@@ -37,7 +40,9 @@ function App() {
           element={
             <ProtectedRoute>
               <FileProvider>
-                <Study />
+                <TimeProvider>
+                  <Study />
+                </TimeProvider>
               </FileProvider>
             </ProtectedRoute>
           }

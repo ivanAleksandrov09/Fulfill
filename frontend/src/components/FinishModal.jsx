@@ -6,6 +6,7 @@ const MINUTE = SECOND * 60;
 const HOUR = MINUTE * 60;
 
 export default function FinishModal({ query, totalTime }) {
+  // we simply construct the query as the keywords joined together
   query = query.join(" ");
 
   const hours = Math.floor(totalTime / HOUR);
@@ -28,13 +29,13 @@ export default function FinishModal({ query, totalTime }) {
           Congratulations on being productive {totalTimeMessage}
         </p>
         <div className="h-[80%]">
-          <QueryResults query={query} />
+          <QueryResults query={query} refreshOnRedirect={true} />
         </div>
 
         <div className="flex justify-center items-center">
           <Link
             to={"/"}
-            className="w-30 text-3xl bg-primary hover:bg-primary-hover rounded-3xl p-2 flex justify-center"
+            className="w-30 text-3xl transition font-medium shadow-md bg-primary hover:bg-primary-hover rounded-3xl p-2 flex justify-center"
           >
             Home
           </Link>
