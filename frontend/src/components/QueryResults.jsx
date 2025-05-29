@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import api from "../api";
 import { useNavigate } from "react-router-dom";
+import { PdfThumbnail } from "./Pdf";
+import textIcon from "../icons/text_icon.png";
 
 export default function QueryResults({ query, refreshOnRedirect }) {
   const [searchResults, setSearchResults] = useState([]);
@@ -62,17 +64,27 @@ export default function QueryResults({ query, refreshOnRedirect }) {
   }, [query]);
 
   return (
-    <div className="flex flex-row gap-4 overflow-x-auto">
+    <div className="flex flex-row gap-4 text-wrap max-w-70">
       {searchResults.map((currentResult, i) => (
         <button
           onClick={() => handleClick(currentResult)}
           key={i}
-          className="h-55 w-fit border-1 p-3 !bg-background/50 hover:!bg-background-hover/50"
+          className="h-75 w-64 border-1 p-3 !bg-background/50 hover:!bg-background-hover/50 flex flex-col"
         >
-          <div className="h-[80%]"></div>
-          <hr></hr>
-          <div className="h-[20%] flex justify-center items-center">
-            {currentResult.document_data.summarized_name}
+          <div className="flex-1 flex justify-center items-center overflow-hidden">
+            {currentResult.document_data.formatted_text ? (
+              <img src={textIcon} />
+            ) : (
+              <PdfThumbnail
+                src={`${api.defaults.baseURL}${currentResult.PDF}`}
+              />
+            )}
+          </div>
+          <hr className="my-2 w-full" />
+          <div className="h-12 flex justify-center items-center">
+            <p className="text-sm line-clamp-2 overflow-ellipsis">
+              {currentResult.document_data.summarized_name}
+            </p>
           </div>
         </button>
       ))}

@@ -4,7 +4,7 @@ import { Link, useLocation } from "react-router-dom";
 import api from "../api";
 import { useFileContext } from "../components/FileContext";
 import FinishModal from "../components/FinishModal";
-import Pdf from "../components/Pdf";
+import { Pdf } from "../components/Pdf";
 import Stopwatch from "../components/Stopwatch";
 import { useTimeContext } from "../components/TimeContext";
 
