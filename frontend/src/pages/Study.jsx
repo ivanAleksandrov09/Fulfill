@@ -165,17 +165,17 @@ export default function Study() {
               const [text, questionPart] = part.split("[QUESTION:");
               const question = JSON.parse(questionPart.slice(0, -1));
               return (
-                <div key={index}>
+                <span key={index}>
                   {text}
                   <QuestionButton question={question} />
-                </div>
+                </span>
               );
             } catch (e) {
               console.error("JSON parse error:", e);
-              return <div key={index}>{part}</div>;
+              return <span key={index}>{part}</span>;
             }
           }
-          return <div key={index}>{part}</div>;
+          return <p key={index}>{part}</p>;
         })}
       </p>
     );
@@ -223,6 +223,9 @@ export default function Study() {
                 <ReactMarkdown
                   components={{
                     p: ({ children }) => (
+                      <QuestionText text={children.toString()} />
+                    ),
+                    h2: ({ children }) => (
                       <QuestionText text={children.toString()} />
                     ),
                   }}

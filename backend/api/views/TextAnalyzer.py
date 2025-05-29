@@ -68,7 +68,7 @@ Given the following text, please:
 2. Return a text name summarizing the entire text
 
 3. Return the given text back formatted to maximize readability and retention by adding line breaks
-after the end of each important section text
+and other important formatting symbols where needed
 
 4. Identify and list the main logical parts/sections of the text as an array
 

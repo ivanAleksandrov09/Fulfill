@@ -37,6 +37,12 @@ export default function QueryResults({ query, refreshOnRedirect }) {
         params: { query },
       });
 
+      if (response.status === 500) {
+        alert(
+          "There's been a server error in processing your document! We are sorry for any inconvenience!"
+        );
+      }
+
       // make sure the document doesn't recommend itself by comparing it's own
       // keywords joined together with the query variable
       const results = response.data.filter((queryResult) => {
@@ -61,7 +67,7 @@ export default function QueryResults({ query, refreshOnRedirect }) {
         <button
           onClick={() => handleClick(currentResult)}
           key={i}
-          className="h-55 w-fit max-h-45 border-1 p-3 !bg-background/50 hover:!bg-background-hover/50"
+          className="h-55 w-fit border-1 p-3 !bg-background/50 hover:!bg-background-hover/50"
         >
           <div className="h-[80%]"></div>
           <hr></hr>
