@@ -50,7 +50,7 @@ export default function Stopwatch({ onCall }) {
   };
   return (
     <div className="flex flex-col ml-auto p-4 text-5xl gap-3 h-fit">
-      <div className="font-medium h-24 rounded-lg p-3 bg-primary flex justify-center items-center">
+      <div className="font-medium h-24 rounded-lg p-3 bg-primary flex justify-center items-center w-45">
         {hours}:{minutes.toString().padStart(2, "0")}:
         {seconds.toString().padStart(2, "0")}
       </div>

@@ -246,7 +246,7 @@ export default function Study() {
             </>
           )}
 
-          <div className="flex flex-col border-l-2">
+          <div className="flex flex-col border-l-2 w-54">
             <Stopwatch onCall={(t) => setSavedTime(t)} />
             <Link
               className="transition font-medium shadow-md mx-auto mt-auto mb-2 text-5xl h-24 w-44 rounded-lg p-3 !bg-red-500 hover:!bg-red-800 flex justify-center items-center"

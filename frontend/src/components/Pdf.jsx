@@ -27,7 +27,7 @@ export function Pdf({ src, onPageUpdate }) {
 
   return (
     <div className="w-fit h-full">
-      <div className="flex flex-row justify-center gap-x-2 mb-0.5">
+      <div className="flex flex-row justify-center gap-x-2 mb-0.5 active:opacity-80">
         <button onClick={prevPage} disabled={pageNumber <= 1}>
           Previous
         </button>
