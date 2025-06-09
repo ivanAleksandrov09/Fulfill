@@ -128,13 +128,20 @@ export default function Study() {
 
   const processText = () => {
     if (!queryResult?.questions) return "";
-    const lines = outputText.split("\n").filter((line) => line.length > 0);
+    const jsonSafeOutputText = outputText.replace(/"/g, "'");
+
+    const lines = jsonSafeOutputText
+      .split("\n")
+      .filter((line) => line.length > 0);
 
     const processedLines = lines.map((line) => {
       const question = queryResult.questions.find((q) =>
         line.includes(q.trigger_sentence)
       );
       if (question) {
+        // when quotation marks are present in question it messes
+        // up the JSON, so we replace them with single quotes
+        question.question = question.question.replace(/"/g, "'");
         return `${line} [QUESTION:${JSON.stringify(question)}]`;
       }
       return line;
@@ -226,6 +233,12 @@ export default function Study() {
                       <QuestionText text={children.toString()} />
                     ),
                     h2: ({ children }) => (
+                      <QuestionText text={children.toString()} />
+                    ),
+                    li: ({ children }) => (
+                      <QuestionText text={children.toString()} />
+                    ),
+                    span: ({ children }) => (
                       <QuestionText text={children.toString()} />
                     ),
                   }}
